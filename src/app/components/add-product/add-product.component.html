@@ -1,0 +1,94 @@
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <h3 class="card-title text-center mb-4">
+            <i class="fas fa-plus-circle text-success me-2"></i>Add New Product
+          </h3>
+
+          <div *ngIf="submitted" class="alert alert-success text-center">
+            <i class="fas fa-check-circle me-2"></i>
+            Product was added successfully!
+          </div>
+
+          <form *ngIf="!submitted" (ngSubmit)="saveProduct()" #productForm="ngForm">
+            <div class="mb-3">
+              <label for="name" class="form-label">Product Name</label>
+              <div class="input-group">
+                <span class="input-group-text">
+                  <i class="fas fa-tag"></i>
+                </span>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="name"
+                  required
+                  [(ngModel)]="product.nom"
+                  name="name"
+                  #name="ngModel"
+                  placeholder="Enter product name"
+                />
+              </div>
+              <div class="text-danger" *ngIf="name.invalid && (name.dirty || name.touched)">
+                Name is required
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="description" class="form-label">Description</label>
+              <div class="input-group">
+                <span class="input-group-text">
+                  <i class="fas fa-align-left"></i>
+                </span>
+                <textarea
+                  class="form-control"
+                  id="description"
+                  required
+                  [(ngModel)]="product.description"
+                  name="description"
+                  #description="ngModel"
+                  rows="3"
+                  placeholder="Enter product description"
+                ></textarea>
+              </div>
+              <div class="text-danger" *ngIf="description.invalid && (description.dirty || description.touched)">
+                Description is required
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label for="price" class="form-label">Price</label>
+              <div class="input-group">
+                <span class="input-group-text">
+                  <i class="fas fa-euro-sign"></i>
+                </span>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="price"
+                  required
+                  [(ngModel)]="product.prix"
+                  name="price"
+                  #price="ngModel"
+                  placeholder="Enter product price"
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+              <div class="text-danger" *ngIf="price.invalid && (price.dirty || price.touched)">
+                Price is required and must be positive
+              </div>
+            </div>
+
+            <div class="d-grid gap-2">
+              <button type="submit" class="btn btn-primary" [disabled]="!productForm.form.valid">
+                <i class="fas fa-save me-2"></i>Save Product
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

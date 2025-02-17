@@ -1,0 +1,105 @@
+<div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow-sm">
+        <div class="card-body">
+          <div *ngIf="loading" class="text-center my-3">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+
+          <div *ngIf="message" class="alert alert-success">
+            {{ message }}
+          </div>
+
+          <div *ngIf="error" class="alert alert-danger">
+            {{ error }}
+          </div>
+
+          <div *ngIf="currentProduct.id && !loading">
+            <h3 class="card-title text-center mb-4">Edit Product</h3>
+
+            <form>
+              <div class="mb-3">
+                <label for="nom" class="form-label">Name</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="nom"
+                  [(ngModel)]="currentProduct.nom"
+                  name="nom"
+                  required
+                />
+              </div>
+
+              <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea
+                  class="form-control"
+                  id="description"
+                  [(ngModel)]="currentProduct.description"
+                  name="description"
+                  rows="3"
+                  required
+                ></textarea>
+              </div>
+
+              <div class="mb-4">
+                <label for="prix" class="form-label">Price (MRU)</label>
+                <input
+                  type="number"
+                  class="form-control"
+                  id="prix"
+                  [(ngModel)]="currentProduct.prix"
+                  name="prix"
+                  required
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+
+              <div class="mb-4">
+                <label class="form-label d-block">Publication Status</label>
+                <button
+                  *ngIf="!currentProduct.publication"
+                  class="btn btn-outline-success me-2"
+                  (click)="updatePublication(true)"
+                >
+                  <i class="fas fa-check-circle me-2"></i>Publish
+                </button>
+                <button
+                  *ngIf="currentProduct.publication"
+                  class="btn btn-outline-warning me-2"
+                  (click)="updatePublication(false)"
+                >
+                  <i class="fas fa-pause-circle me-2"></i>Unpublish
+                </button>
+              </div>
+
+              <div class="d-flex gap-2">
+                <button
+                  type="submit"
+                  class="btn btn-primary flex-grow-1"
+                  (click)="updateProduct()"
+                >
+                  <i class="fas fa-save me-2"></i>Update
+                </button>
+                <button
+                  class="btn btn-danger"
+                  (click)="deleteProduct()"
+                >
+                  <i class="fas fa-trash me-2"></i>Delete
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div *ngIf="!currentProduct.id && !loading" class="alert alert-warning">
+            Product not found!
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

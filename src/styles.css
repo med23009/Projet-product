@@ -1,1 +1,103 @@
 /* You can add global styles to this file, and also import other style files */
+
+:root {
+  --primary-color: #2c3e50;
+  --secondary-color: #3498db;
+  --success-color: #2ecc71;
+  --danger-color: #e74c3c;
+  --background-color: #f8f9fa;
+  --text-color: #2c3e50;
+  --border-radius: 8px;
+  --box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.btn {
+  border-radius: var(--border-radius);
+  padding: 8px 16px;
+  transition: all 0.3s ease;
+  font-weight: 500;
+}
+
+.btn-primary {
+  background-color: var(--secondary-color);
+  border-color: var(--secondary-color);
+}
+
+.btn-success {
+  background-color: var(--success-color);
+  border-color: var(--success-color);
+}
+
+.btn-danger {
+  background-color: var(--danger-color);
+  border-color: var(--danger-color);
+}
+
+.form-control {
+  border-radius: var(--border-radius);
+  padding: 10px;
+  border: 1px solid #ddd;
+  transition: border-color 0.3s ease;
+}
+
+.form-control:focus {
+  border-color: var(--secondary-color);
+  box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+}
+
+.card {
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  background: white;
+  transition: transform 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+}
+
+.list-group-item {
+  border-radius: var(--border-radius);
+  margin-bottom: 8px;
+  border: 1px solid #ddd;
+  transition: all 0.3s ease;
+}
+
+.list-group-item:hover {
+  transform: translateX(5px);
+  background-color: rgba(52, 152, 219, 0.1);
+}
+
+.list-group-item.active {
+  background-color: var(--secondary-color);
+  border-color: var(--secondary-color);
+}
+
+.edit-form {
+    max-width: 400px;
+    margin: auto;
+  }
+  
+  .submit-form {
+    max-width: 400px;
+    margin: auto;
+  }
+  
+  .list {
+    text-align: left;
+    max-width: 750px;
+    margin: auto;
+  }
