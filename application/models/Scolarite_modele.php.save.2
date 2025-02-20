@@ -1,0 +1,289 @@
+
+
+
+
+<?php
+
+class Scolarite_modele extends CI_Model {
+
+    function __construct() {
+        parent::__construct();
+        $this->load->database();
+    }
+
+    var $skey = "SuPerEncKey2010"; // you can change it
+
+    /*
+     * fonctions pour encodage et decodage pour les annees et les semestres dans l url.
+     */
+
+    public function safe_b64encode($string) {
+        $data = base64_encode($string);
+        $data = str_replace(array('+', '/', '='), array('-', '_', ''), $data);
+        return $data;
+    }
+
+    public function safe_b64decode($string) {
+        $data = str_replace(array('-', '_'), array('+', '/'), $string);
+        $mod4 = strlen($data) % 4;
+        if ($mod4) {
+            $data .= substr('====', $mod4);
+        }
+        return base64_decode($data);
+    }
+//added 14/02/23 by team scolarite
+function get_etudiant_or($anneeCourante){
+  $etudiant = array();
+$sessioncourante =$this->get_session_courante();
+           $anneeCourante = $sessioncourante['annee'][0];
+           $semestreCourant = $sessioncourante['semestre'][0];
+           if( $semestreCourant=3 ){
+               $anneeCourante=$anneeCourante;
+            }
+            if($semestreCourant=1){  
+                $anneeCourante=$anneeCourante-1;
+            }
+        $query = $this->db->query("SELECT Distinct d.`matriculeEtudiant`, `nom`,`prenom` FROM `etudiant` e join dossieretudiant d on(e.matriculeEtudiant=d.matriculeEtudiant)" 
+            ."where `annee`=$anneeCourante   and `idProgramme`='TC'  order by `matriculeEtudiant`;");
+ //and e.matriculeEtudiant not in (SELECT `matriculeEtudiant` from dossieretudiant WHERE `idProgramme`!='TC') order by `matriculeEtudiant`;");
+        if ($query->num_rows() > 0) {
+            foreach ($query->result_array() as $row) {
+                $etudiant['matricule'][] = $row['matriculeEtudiant'];
+                $etudiant['nom'][] = $row['nom'];
+                $etudiant['prenom'][] = $row['prenom'];
+            }
+        }
+        return $etudiant;
+
+
+
+}
+   //orientation ajouter par tahye Lehbib
+function orienter_etudiant_filiere($post) {
+        $tableauMatricule = array_keys($post['items'], 'on');
+        $data =array();
+        $sessioncourante =$this->get_session_courante();
+           $anneeCourante = $sessioncourante['annee'][0];
+           $semestreCourant = $sessioncourante['semestre'][0];
+           if( $semestreCourant=3 && $post['idProgramme']=='TC'){
+               $anneeCourante=$anneeCourante;
+            }
+            if($semestreCourant=1){  
+                $anneeCourante=$anneeCourante+1;
+            }
+        $nombreEtudiant = count($tableauMatricule);
+       // $tableauGroupe =$this->get_group();
+        $nombreEtudiant = count($tableauMatricule);
+        $data = NULL;
+       // $nombreGroupe = count($tableauGroupe);
+        if (!isset($post)) {
+            return false;
+        }
+        $compteursValide = 0;
+        $compteurMessage = 0;
+		//print_r($tableauMatricule);
+		$tableSigle=array();
+         if($post['idProgramme']=='DSI'){
+            $tableSigle=$this->get_module_irt();
+           // print_r($tableSigle);
+         $nombreSigle=count($tableSigle); }
+          if($post['idProgramme']=='GE'){
+            $tableSigle=$this->get_module_ge();
+           // print_r($tableSigle);
+         $nombreSigle=count($tableSigle); }
+         if($post['idProgramme']=='IRT'){
+            $tableSigle=$this->get_module_irt();
+         $nombreSigle=count($tableSigle); } 
+        if($post['idProgramme']=='GM'){
+            $tableSigle=$this->get_module_gm();
+         $nombreSigle=count($tableSigle); }
+          if($post['idProgramme']=='MPG'){
+            $tableSigle=$this->get_module_mpg();
+         $nombreSigle=count($tableSigle); } 
+                  if($post['idProgramme']=='SID'){
+            $tableSigle=$this->get_module_sid();
+         $nombreSigle=count($tableSigle); }
+         if($post['idProgramme']=='GC'){
+            $tableSigle=$this->get_module_gc_he();
+            //print_r($tableSigle);
+         $nombreSigle=count($tableSigle); }
+$tableSigle=$this->get_module_prg($post['idProgramme']);
+  $nombreSigle=count($tableSigle);
+ 
+    for ($i = 0; $i < $nombreEtudiant; $i++) {     
+        $query = $this->db->query("SELECT DISTINCT `matriculeEtudiant` FROM `dossieretudiant` WHERE `matriculeEtudiant`='$tableauMatricule[$i]' and `idProgramme`<> 'TC'");
+    for($s = 0; $s < $nombreSigle; $s++){     
+            $this->db->where(array('matriculeEtudiant' => $tableauMatricule[$i], 'annee' => $anneeCourante, 'semestre' => $semestreCourant, 'sigle' =>$tableSigle[$s]));
+    $query1 = $this->db->get('planetudes');}
+               /* for ($j = 0; $j < $nombreGroupe; $j++) {
+                    $this->db->where(array('matriculeEtudiant' => $tableauMatricule[$i], 'idGroupe' => $tableauGroupe[$j]));
+                $query2 = $this->db->get('listeetudiants');}*/
+             if ( $query->num_rows() > 0 ) {
+               $data['message'][$compteurMessage] = 'L\'etudiant <b>' . $tableauMatricule[$i] . ' </b>est deja orienter';
+                $compteurMessage++; 
+    } 
+        else{
+                $info = array(
+                    'matriculeEtudiant'=>$tableauMatricule[$i],
+                    'idProgramme' => $post['idProgramme'],
+                    'grade'=> 4,
+                    'annee'=>$anneeCourante,
+                    'semestre'=>$semestreCourant,     
+                );
+               
+                $this->db->insert('dossieretudiant', $info);
+                      for($s = 0; $s < $nombreSigle; $s++){ 
+                $info1 = array(
+                        'matriculeEtudiant' => $tableauMatricule[$i],
+                        'sigle' => $tableSigle[$s],
+                        'semestre' =>$semestreCourant ,
+                        'note' => '-1',
+                        'cote' => '',
+                        'lien' => 'AV',
+                        'etatNote' => 'professeur',
+                     'annee' => $anneeCourante);
+                //print_r($info1);
+                      $this->db->insert('planetudes', $info1);}
+                      
+                      $data['valide'][$compteursValide]='L\'etudiant <b>' . $tableauMatricule[$i] .'</b>est bien orienter au  <b>' . $post['idProgramme'] . '</b>';
+                     $compteursValide++;
+             /*  for ($j = 0; $j < $nombreGroupe; $j++) {
+                        $info2 = array(
+                            'matriculeEtudiant' => $tableauMatricule[$i],
+                            'idGroupe' => $tableauGroupe[$j]);
+                        //print_r($info2);
+               $this->db->insert('listeetudiants', $info2); 
+    }*/}
+             
+    
+               } return $data;
+    }
+         //désorientation ajouter par tahye Lehbib
+function desorienter_etudiant_filiere($post) {
+        $tableauMatricule = array_keys($post['items'], 'on');
+        $data =array();
+        //$filiere=array();
+         $programe =$this->get_programme();
+       for($i=0;$i<count($programe);$i++){
+       
+       $filiere = $programe['idProgramme'][$i];}
+        
+        $sessioncourante =$this->get_session_courante();
+           $anneeCourante = $sessioncourante['annee'][0];
+           $semestreCourant = $sessioncourante['semestre'][0];
+           if( $semestreCourant=3 && $filiere=='TC'){
+               $anneeCourante=$anneeCourante;
+            }
+            if($semestreCourant=1){  
+                $anneeCourante=$anneeCourante+1;
+            }
+        $nombreEtudiant = count($tableauMatricule);
+       // $tableauGroupe =$this->get_group();
+        $nombreEtudiant = count($tableauMatricule);
+        $data = NULL;
+       // $nombreGroupe = count($tableauGroupe);
+        if (!isset($post)) {
+            return false;
+        }
+        $compteursValide = 0;
+        $compteurMessage = 0;
+        
+         if($filiere=='IRT'){
+            $tableSigle=$this->get_module_irt();
+           // print_r($tableSigle);
+         $nombreSigle=count($tableSigle); }
+          if($filiere=='GE'){
+            $tableSigle=$this->get_module_ge();
+           // print_r($tableSigle);
+         $nombreSigle=count($tableSigle); }
+         if($filiere=='TC'){
+            $tableSigle=$this->get_module_tcbreSigle=count($tableSigle);
+ 
+    for ($i = 0; $i < $nombreEtudiant; $i++) {     
+        $query = $this->db->query("SELECT DISTINCT `matriculeEtudiant` FROM `dossieretudiant` WHERE `matriculeEtudiant`='$tableauMatricule[$i]' and `idProgramme`<> 'TC'");
+    for($s = 0; $s < $nombreSigle; $s++){     
+            $this->db->where(array('matriculeEtudiant' => $tableauMatricule[$i], 'annee' => $anneeCourante, 'semestre' => $semestreCourant, 'sigle' =>$tableSigle[$s]));
+    $query1 = $this->db->get('planetudes');}
+               /* for ($j = 0; $j < $nombreGroupe; $j++) {
+                    $this->db->where(array('matriculeEtudiant' => $tableauMatricule[$i], 'idGroupe' => $tableauGroupe[$j]));
+                $query2 = $this->db->get('listeetudiants');}*/
+             if ( $query->num_rows() > 0 ) {
+               $data['message'][$compteurMessage] = 'L\'etudiant <b>' . $tableauMatricule[$i] . ' </b>est deja orienter';
+                $compteurMessage++; 
+    } 
+        else{
+                $info = array(
+                    'matriculeEtudiant'=>$tableauMatricule[$i],
+                    'idProgramme' => $post['idProgramme'],
+                    'grade'=> 4,
+                    'annee'=>$anneeCourante,
+                    'semestre'=>$semestreCourant,     
+                );
+               
+                $this->db->insert('dossieretudiant', $info);
+                      for($s = 0; $s < $nombreSigle; $s++){ 
+                $info1 = array(
+                        'matriculeEtudiant' => $tableauMatricule[$i],
+                        'sigle' => $tableSigle[$s],
+                        'semestre' =>$semestreCourant ,
+                        'note' => '-1',
+                        'cote' => '',
+                        'lien' => 'AV',
+                        'etatNote' => 'professeur',
+                     'annee' => $anneeCourante);
+                //print_r($info1);
+                      $this->db->insert('planetudes', $info1);}
+                      
+                      $data['valide'][$compteursValide]='L\'etudiant <b>' . $tableauMatricule[$i] .'</b>est bien orienter au  <b>' . $post['idProgramme'] . '</b>';
+                     $compteursValide++;
+             /*  for ($j = 0; $j < $nombreGroupe; $j++) {
+                        $info2 = array(
+                            'matriculeEtudiant' => $tableauMatricule[$i],
+                            'idGroupe' => $tableauGroupe[$j]);
+                        //print_r($info2);
+               $this->db->insert('listeetudiants', $info2); 
+    }*/}
+             
+    
+               } return $data;
+    }
+         //désorientation ajouter par tahye Lehbib
+function desorienter_etudiant_filiere($post) {
+        $tableauMatricule = array_keys($post['items'], 'on');
+        $data =array();
+        //$filiere=array();
+         $programe =$this->get_programme();
+       for($i=0;$i<count($programe);$i++){
+       
+       $filiere = $programe['idProgramme'][$i];}
+        
+        $sessioncourante =$this->get_session_courante();
+           $anneeCourante = $sessioncourante['annee'][0];
+           $semestreCourant = $sessioncourante['semestre'][0];
+           if( $semestreCourant=3 && $filiere=='TC'){
+               $anneeCourante=$anneeCourante;
+            }
+            if($semestreCourant=1){  
+                $anneeCourante=$anneeCourante+1;
+            }
+        $nombreEtudiant = count($tableauMatricule);
+       // $tableauGroupe =$this->get_group();
+        $nombreEtudiant = count($tableauMatricule);
+        $data = NULL;
+       // $nombreGroupe = count($tableauGroupe);
+        if (!isset($post)) {
+            return false;
+        }
+        $compteursValide = 0;
+        $compteurMessage = 0;
+        
+         if($filiere=='IRT'){
+            $tableSigle=$this->get_module_irt();
+           // print_r($tableSigle);
+         $nombreSigle=count($tableSigle); }
+          if($filiere=='GE'){
+            $tableSigle=$this->get_module_ge();
+           // print_r($tableSigle);
+         $nombreSigle=count($tableSigle); }
+         if($filiere=='TC'){
+            $tableSigle=$this->get_module_tc
